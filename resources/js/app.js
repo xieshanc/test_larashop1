@@ -6,6 +6,8 @@
 
 require('./bootstrap');
 
+$('input').attr('autocomplete', 'off');
+
 window.Vue = require('vue');
 
 /**
@@ -26,6 +28,9 @@ Vue.component('example-component', require('./components/ExampleComponent.vue').
  * the page. Then, you may begin adding components to this application
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
+
+require('./components/SelectDistrict');
+require('./components/UserAddressesCreateAndEdit');
 
 const app = new Vue({
     el: '#app',
