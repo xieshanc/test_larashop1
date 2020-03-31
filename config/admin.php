@@ -132,7 +132,7 @@ return [
     'check_menu_roles'       => true,
 
     // 管理员默认头像
-    'default_avatar' => '/vendor/laravel-admin/AdminLTE/dist/img/user2-160x160.jpg',
+    'default_avatar' => '/vendor/laravel-admin/AdminLTE/dist/img/usr2-160x160.jpg',
 
     // 地图组件提供商
     'map_provider' => 'google',
