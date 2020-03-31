@@ -37,8 +37,8 @@ class ProductsController extends AdminController
         $grid->review_count('评论数');
 
         $grid->actions(function ($actions) {
-            // $actions->disableView();
-            $actions->disableDelete();
+            $actions->disableView();
+            // $actions->disableDelete();
         });
         $grid->tools(function ($tools) {
             $tools->batch(function ($batch) {
@@ -83,15 +83,20 @@ class ProductsController extends AdminController
     {
         $form = new Form(new Product);
 
-        $form->text('title', __('Title'));
-        $form->textarea('description', __('Description'));
-        $form->image('image', __('Image'));
-        $form->switch('on_sale', __('On sale'))->default(1);
-        $form->decimal('rating', __('Rating'))->default(5.00);
-        $form->number('sold_count', __('Sold count'));
-        $form->number('review_count', __('Review count'));
-        $form->decimal('price', __('Price'));
+        $form->text('title', '商品名')->rules('required');
+        $form->image('image', '图片')->rules('required|image');
+        $form->quill('description', '商品描述')->rules('required');
+        $form->radio('on_sale', '上架')->options(['1' => '是', '0' => '否'])->default('0');
+        $form->hasMany('skus', 'SKU 列表', function (Form\NestedForm $form) {
+            $form->text('title', 'SKU 名称')->rules('required');
+            $form->text('description', 'SKU 描述')->rules('required');
+            $form->text('price', '单价')->rules('required|numeric|min:0.01');
+            $form->text('stock', '剩余库存')->rules('required|integer|min:0');
+        });
 
+        $form->saving(function (Form $form) {
+            $form->model()->price = collect($form->input('skus'))->where(Form::REMOVE_FLAG_NAME, 0)->min('price') ?: 0;
+        });
         return $form;
     }
 }
