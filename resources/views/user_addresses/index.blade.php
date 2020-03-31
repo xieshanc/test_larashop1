@@ -30,8 +30,14 @@
                 <td>{{ $address->zip }}</td>
                 <td>{{ $address->contact_phone }}</td>
                 <td>
-                  <button class="btn btn-primary">修改</button>
-                  <button class="btn btn-danger">删除</button>
+                  <a href="{{ route('user_addresses.edit', ['user_address' => $address->id]) }}" class="btn btn-primary">修改</a>
+                  <!-- <form action="{{ route('user_addresses.destroy', ['user_address' => $address->id]) }}" method="POST" style="display: inline-block">
+                    {{ csrf_field() }}
+                    {{ method_field('DELETE') }}
+                    <button class="btn btn-danger" type="submit">删除</button>
+                  </form> -->
+
+                  <button class="btn btn-danger btn-del-address" type="button" data-id={{ $address->id }}>删除</button>
                 </td>
               </tr>
               @endforeach
@@ -42,4 +48,28 @@
       </div>
     </div>
   </div>
+@stop
+
+@section('scriptsAfterJs')
+<script>
+  $(document).ready(function () {
+    $('.btn-del-address').click(function () {
+      var id = $(this).data('id');
+      swal({
+        'title': '确定要删除🐴',
+        'icon': 'warning',
+        'buttons': ['取消', '确定'],
+        dangerMode: true,
+      })
+      .then(function (willDelete) {
+        if (!willDelete) {
+          return;
+        }
+        axios.delete('/user_addresses/' + id).then(function () {
+          location.reload();
+        })
+      });
+    });
+  });
+</script>
 @stop
