@@ -25,8 +25,13 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
 
     // Route::resource('user_addresses', 'UserAddressesController', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
     Route::resource('user_addresses', 'UserAddressesController', ['except' => ['show']]);
+
+    Route::post('products/{product}/favorite', 'ProductsController@favor')->name('products.favor');
+    Route::delete('pproducts/{product}/favorite', 'ProductsController@disfavor')->name('products.disfavor');
+    Route::get('products/favorites', 'ProductsController@favorites')->name('products.favorites');
 });
 
 
-Route::resource('products', 'ProductsController');
+
 // Route::get('products', 'ProductsController@index')->name('products.index');
+Route::resource('products', 'ProductsController');

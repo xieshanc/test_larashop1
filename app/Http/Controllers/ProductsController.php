@@ -48,6 +48,35 @@ class ProductsController extends Controller
         if (!$product->on_sale) {
             throw new InvalidRequestException('商品未上架');
         }
-        return view('products.show', ['product' => $product]);
+
+        $favored = false;
+        if ($user = $request->user()) {
+            $favored = boolval($user->favoriteProducts()->find($product->id));
+        }
+
+        return view('products.show', ['product' => $product, 'favored' => $favored]);
+    }
+
+    public function favorites(Request $request)
+    {
+        $products = $request->user()->favoriteProducts()->paginate(16);
+        return view('products.favorites', ['products' => $products]);
+    }
+
+    public function favor(Product $product, Request $request)
+    {
+        $user = $request->user();
+        if ($user->favoriteProducts()->find($product->id)) {
+            return [];
+        }
+        $user->favoriteProducts()->attach($product);
+        return [];
+    }
+
+    public function disfavor(Product $product, Request $request)
+    {
+        $user = $request->user();
+        $user->favoriteProducts()->detach($product);
+        return [];
     }
 }

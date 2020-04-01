@@ -37,13 +37,22 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
     ];
 
+
+    public function isOwnerOf($model)
+    {
+        return $model->user_id === $this->id;
+    }
+
+
     public function addresses()
     {
         return $this->hasMany(UserAddress::class);
     }
 
-    public function isOwnerOf($model)
+    public function favoriteProducts()
     {
-        return $model->user_id === $this->id;
+        return $this->belongsToMany(Product::class, 'user_favorite_products', 'user_id', 'product_id')
+                    ->withTimestamps()
+                    ->orderBy('user_favorite_products.created_at', 'desc');
     }
 }
