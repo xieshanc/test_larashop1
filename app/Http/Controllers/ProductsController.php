@@ -60,6 +60,7 @@ class ProductsController extends Controller
     public function favorites(Request $request)
     {
         $products = $request->user()->favoriteProducts()->paginate(16);
+        $count = $request->user()->favoriteProducts()->count();
         return view('products.favorites', ['products' => $products]);
     }
 

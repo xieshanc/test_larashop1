@@ -15,6 +15,11 @@ Route::redirect('/', '/products')->name('root');
 
 Auth::routes(['verify' => true]);
 
+Route::get('products', 'ProductsController@index')->name('products.index');
+Route::get('products/{product}', 'ProductsController@show')->name('products.show')->where(['product' => '\d+']);
+// 资源路由做不了上面那样的限制?
+// Route::resource('products', 'ProductsController');
+
 Route::group(['middleware' => ['auth', 'verified']], function () {
     // Route::get('user_addresses', 'UserAddressesController@index')->name('user_addresses.index');
     // Route::get('user_addresses/create', 'UserAddressesController@create')->name('user_addresses.create');
@@ -32,6 +37,3 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
 });
 
 
-
-// Route::get('products', 'ProductsController@index')->name('products.index');
-Route::resource('products', 'ProductsController');
