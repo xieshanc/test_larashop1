@@ -19,7 +19,7 @@ class CartController extends Controller
             $cart->amount += $amount;
             $cart->save();
         } else {
-            // $cart = new CartItem(['amount' => $amount]);
+            // $cart = new CartItem(['amount' => $amount]); 66
             $cart = new CartItem;
             $cart->amount = $amount;
             $cart->user()->associate($user);
