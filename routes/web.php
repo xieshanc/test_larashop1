@@ -11,7 +11,7 @@
 |
 */
 
-Route::get('/', 'PagesController@root')->name('root');
+Route::redirect('/', '/products')->name('root');
 
 Auth::routes(['verify' => true]);
 
@@ -26,3 +26,7 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     // Route::resource('user_addresses', 'UserAddressesController', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
     Route::resource('user_addresses', 'UserAddressesController', ['except' => ['show']]);
 });
+
+
+Route::resource('products', 'ProductsController');
+// Route::get('products', 'ProductsController@index')->name('products.index');
