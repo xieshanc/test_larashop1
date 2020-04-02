@@ -7,6 +7,7 @@ use App\Http\Requests\OrderPaymentRequest;
 use App\Models\Order;
 use App\Exception\InvalidRequestException;
 use Carbon\Carbon;
+use Endroid\QrCode\QrCode;
 
 class PaymentController extends Controller
 {
@@ -56,5 +57,15 @@ class PaymentController extends Controller
         ]);
 
         return app('alipay')->success();
+    }
+
+    public function payByWechat(Order $order, Request $request)
+    {
+        // $url = $wechatOrder->code_url;
+        $url = 'https://item.taobao.com/item.htm?spm=a1z0d.6639537.1997196601.28.5a297484Uuz3sm&id=614510466848';
+        $qrCode = new QrCode($url);
+
+        // 将生成的二维码图片数据以字符串形式输出，并带上相应的响应类型
+        return response($qrCode->writeString(), 200, ['Content-Type' => $qrCode->getContentType()]);
     }
 }
