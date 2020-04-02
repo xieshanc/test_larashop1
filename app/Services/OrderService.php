@@ -7,6 +7,7 @@ use Auth;
 use App\Models\UserAddress;
 use App\Models\Order;
 use App\Models\ProductSku;
+use App\Models\OrderItem;
 use App\Exceptions\InvalidRequestException;
 use App\Jobs\CloseOrder;
 use Carbon\Carbon;
@@ -67,4 +68,27 @@ class OrderService
         dispatch(new CloseOrder($order, config('app.order_ttl')));
         return $order;
     }
+
+    public function updateProductSoldCount(Order $order)
+    {
+        // 预加载商品数据
+        $order->load('items.product');
+        // 循环遍历订单的商品
+        foreach ($order->items as $item) {
+            $product   = $item->product;
+            // 计算对应商品的销量
+            $soldCount = OrderItem::query()
+                ->where('product_id', $product->id)
+                ->whereHas('order', function ($query) {
+                    $query->whereNotNull('paid_at');  // 关联的订单状态是已支付
+                })->sum('amount');
+
+            // 更新商品销量
+            $product->sold_count = $soldCount;
+            $product->save();
+        }
+
+    }
 }
+// $product->sold_count = $product->sold_count + $item->amount;
+            // $product->save();

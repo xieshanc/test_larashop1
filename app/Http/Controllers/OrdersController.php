@@ -33,4 +33,12 @@ class OrdersController extends Controller
 
         return $orderService->store($address, $request->input('remark'), $request->input('items'));
     }
+
+    public function test()
+    {
+        $order = Order::find(33);
+        echo '<pre>';
+        var_dump($order->items->toArray());
+        exit;
+    }
 }
