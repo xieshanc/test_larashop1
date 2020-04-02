@@ -39,6 +39,7 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::delete('cart/{sku}', 'CartController@remove')->name('cart.remove');
 
     Route::get('orders', 'OrdersController@index')->name('orders.index');
+    Route::get('orders/{order}', 'OrdersController@show')->name('orders.show');
     Route::post('orders', 'OrdersController@store')->name('orders.store');
 });
 
