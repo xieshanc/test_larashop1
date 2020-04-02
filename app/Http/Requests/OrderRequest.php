@@ -34,7 +34,6 @@ class OrderRequest extends FormRequest
             'items.*.sku_id' => [
                 'required',
                 function ($attribute, $value, $fail) {
-                    echo $attribute . "<br>";
                     if (!$sku = ProductSku::find($value)) {
                         return $fail('商品不存在');
                     }
