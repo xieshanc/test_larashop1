@@ -228,6 +228,6 @@ return [
 
     ],
 
-    'order_ttl' => 1800, // 秒
+    'order_ttl' => 86400, // 秒
 
 ];
