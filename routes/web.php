@@ -41,13 +41,17 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::get('orders', 'OrdersController@index')->name('orders.index');
     Route::get('orders/{order}', 'OrdersController@show')->name('orders.show');
     Route::post('orders', 'OrdersController@store')->name('orders.store');
+
+    Route::get('payment/{order}/alipay', 'PaymentController@payByAlipay')->name('payment.alipay');
+    Route::get('payment/alipay/return', 'PaymentController@alipayReturn')->name('payment.alipay.return');
 });
+Route::post('payment/alipay/notify', 'PaymentController@alipayNotify')->name('payment.alipay.notify');
 
 
-Route::get('alipay', function () {
-    return app('alipay')->web([
-        'out_trade_no' => time(),
-        'total_amount' => '1',
-        'subject' => '刚刚好，亲本什么都算到了',
-    ]);
-});
+// Route::get('alipay', function () {
+//     return app('alipay')->web([
+//         'out_trade_no' => time(),
+//         'total_amount' => '1',
+//         'subject' => '刚刚好，亲本什么都算到了',
+//     ]);
+// });

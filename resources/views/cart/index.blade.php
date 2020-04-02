@@ -160,10 +160,6 @@
           });
         }, function (error) {
           if (error.response.status === 422) {
-            // ????? 这个 errors 没有值
-            console.log(typeof error.response.data);
-            console.log(error.response.data);
-            console.log(error.response.data.errors);
             // http 状态码为 422 代表用户输入校验失败
             var html = '<div>';
             _.each(error.response.data.errors, function (errors) {
