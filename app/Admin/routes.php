@@ -21,5 +21,5 @@ Route::group([
     $router->delete('products/{id}', 'ProductsController@destroy');
 
     $router->get('orders', 'OrdersController@index')->name('admin.orders.index');
-
+    $router->get('orders/{order}', 'OrdersController@show')->name('admin.orders.show');
 });
