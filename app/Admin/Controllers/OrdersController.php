@@ -4,11 +4,12 @@ namespace App\Admin\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\HandleRefundRequest;
+use Illuminate\Foundation\Validation\ValidatesRequests;
 use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Grid;
 use Encore\Admin\Layout\Content;
 use App\Exceptions\InvalidRequestException;
-use Illuminate\Foundation\Validation\ValidatesRequests;
 
 class OrdersController extends AdminController
 {
@@ -86,6 +87,25 @@ class OrdersController extends AdminController
         ]);
 
         return redirect()->back();
+    }
+
+    public function handleRefund(Order $order, HandleRefundRequest $request)
+    {
+        if ($order->refund_status !== Order::REFUND_STATUS_APPLIED) {
+            throw new InvalidRequestsException('订单状态不正确');
+        }
+
+        if ($request->input('agree')) {
+
+        } else {
+            $extra = $order->extra ?: [];
+            $extra['refund_disagree_reason'] = $request->input('reason');
+            $order->update([
+                'refund_status' => Order::REFUND_STATUS_PENDING,
+                'extra'         => $extra,
+            ]);
+        }
+        return $order;
     }
 
 
