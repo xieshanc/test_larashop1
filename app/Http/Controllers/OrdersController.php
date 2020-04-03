@@ -34,6 +34,19 @@ class OrdersController extends Controller
         return $orderService->store($address, $request->input('remark'), $request->input('items'));
     }
 
+    public function received(Order $order, Request $request)
+    {
+        $this->authorize('own', $order);
+
+        if ($order->ship_status !== Order::SHIP_STATUS_DELIVERED) {
+            throw new InvalidRequestException('错误');
+        }
+
+        $order->update(['ship_status' => Order::SHIP_STATUS_RECEIVED]);
+        return $order;
+        // return redirect()->back();
+    }
+
     public function test()
     {
         $order = Order::find(33);
