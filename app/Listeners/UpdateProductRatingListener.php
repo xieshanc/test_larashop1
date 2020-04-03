@@ -2,13 +2,14 @@
 
 namespace App\Listeners;
 
-use App\Events\OrderPaid;
+use DB;
+use App\Models\OrderItem;
+use App\Events\OrderReviewedEvent;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use App\Models\OrderItem;
 use App\Services\OrderService;
 
-class UpdateProductSoldCount implements ShouldQueue
+class UpdateProductRatingListener implements ShouldQueue
 {
     /**
      * Create the event listener.
@@ -23,13 +24,12 @@ class UpdateProductSoldCount implements ShouldQueue
     /**
      * Handle the event.
      *
-     * @param  OrderPaid  $event
+     * @param  OrderReviewedEvent  $event
      * @return void
      */
-    public function handle(OrderPaid $event)
+    public function handle(OrderReviewedEvent $event)
     {
         $order = $event->getOrder();
-        app(OrderService::class)->updateProductSoldCount($order);
-        // $orderService->updateProductSoldCount($order);
+        app(OrderService::class)->updateProductRating($order);
     }
 }

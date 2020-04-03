@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use DB;
 use Auth;
 // use App\Models\User;
 use App\Models\UserAddress;
@@ -87,8 +88,30 @@ class OrderService
             $product->sold_count = $soldCount;
             $product->save();
         }
+    }
 
+    public function updateProductRating(Order $order)
+    {
+        // orders:      reviewed
+        // order_items: rating, review, review_at
+        // product:     rating, review_count
+        // product_sku: 无
+
+        $items = $order->items()->with(['product'])->get();
+        foreach ($items as $item) {
+            $result = OrderItem::query()
+                ->where('product_id', $item->product_id)
+                ->whereNotNull('reviewed_at')
+                ->whereHas('order', function ($query) {
+                    $query->whereNotNull('paid_at');
+                })
+                ->first([
+                    DB::raw('count(*) as review_count'),
+                    DB::raw('avg(rating) as rating')
+                ]);
+            $item->product->rating = $result->rating;
+            $item->product->review_count = $result->review_count;
+            $item->product->save();
+        }
     }
 }
-// $product->sold_count = $product->sold_count + $item->amount;
-            // $product->save();

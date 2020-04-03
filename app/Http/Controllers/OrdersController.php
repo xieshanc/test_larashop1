@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\ProductSku;
 use App\Models\UserAddress;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use App\Http\Requests\OrderRequest;
-use Carbon\Carbon;
-use App\Exceptions\InvalidRequestException;
+use App\Http\Requests\SendReviewRequest;
+use App\Http\Requests\ApplyRefundRequest;
 use App\Jobs\CloseOrder;
-use App\Services\OrderService;
+use App\Events\OrderReviewedEvent;
+use App\Exceptions\InvalidRequestException;
+use Carbon\Carbon;
 
 class OrdersController extends Controller
 {
@@ -47,11 +50,75 @@ class OrdersController extends Controller
         // return redirect()->back();
     }
 
-    public function test()
+    public function review(Order $order)
+    {
+        $this->authorize('own', $order);
+        if (!$order->paid_at) {
+            throw new InvalidRequestException('没有支付');
+        }
+        return view('orders.review', ['order' => $order->load(['items.product', 'items.productSku'])]);
+    }
+
+    public function sendReview(Order $order, SendReviewRequest $request, OrderService $orderService)
+    {
+        $this->authorize('own', $order);
+        if (!$order->paid_at) {
+            throw new InvalidRequestException('没有支付');
+        }
+
+        if ($order->reviewed) {
+            throw new InvalidRequestException('已评价');
+        }
+        $reviews = $request->input('reviews');
+        \DB::transaction(function () use ($reviews, $order, $orderService) {
+            foreach ($reviews as $review) {
+                $orderItem = $order->items()->find($review['id']);
+                $orderItem->update([
+                    'rating'    => $review['rating'],
+                    'review'    => $review['review'],
+                    'reviewed_at' => Carbon::now(),
+                ]);
+            }
+            $order->reviewed = true;
+            $order->save();
+
+            // event(new OrderReviewedEvent($order));
+            $orderService->updateProductRating($order);
+
+        });
+
+        return redirect()->back();
+    }
+
+    public function applyRefund(Order $order, ApplyRefundRequest $request)
+    {
+        $this->authorize('own', $order);
+        if (!$order->paid_at) {
+            throw new InvalidRequestException('订单未支付，不可退款');
+        }
+
+        if ($order->refund_status !== Order::REFUND_STATUS_PENDING) {
+            throw new InvalidRequestException('申请过了');
+        }
+
+        $extra = $order->extra ?: [];
+        $extra['refund_reason'] = $request->input('reason');
+
+        $order->update([
+            'refund_status' => Order::REFUND_STATUS_APPLIED,
+            'extra'         => $extra,
+        ]);
+
+        return $order;
+    }
+
+
+
+    public function test(OrderService $orderService)
     {
         $order = Order::find(33);
-        echo '<pre>';
-        var_dump($order->items->toArray());
-        exit;
+        $orderService->updateProductRating($order);
+
+        return view('pages.white');
     }
 }
