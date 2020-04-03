@@ -24,4 +24,8 @@ Route::group([
     $router->get('orders/{order}', 'OrdersController@show')->name('admin.orders.show');
     $router->post('orders/{order}/ship', 'OrdersController@ship')->name('admin.orders.ship');
     $router->post('orders/{order}/refund', 'OrdersController@handleRefund')->name('admin.orders.handle_refund');
+
+    $router->get('coupon_codes', 'CouponCodesController@index')->name('coupon_codes.index');
+    $router->get('coupon_codes/create', 'CouponCodesController@create')->name('coupon_codes.create');
+    $router->post('coupon_codes', 'CouponCodesController@store')->name('coupon_codes.store');
 });
