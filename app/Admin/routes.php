@@ -28,4 +28,7 @@ Route::group([
     $router->get('coupon_codes', 'CouponCodesController@index')->name('coupon_codes.index');
     $router->get('coupon_codes/create', 'CouponCodesController@create')->name('coupon_codes.create');
     $router->post('coupon_codes', 'CouponCodesController@store')->name('coupon_codes.store');
+    $router->get('coupon_codes/{coupon_code}/edit', 'CouponCodesController@edit');
+    $router->put('coupon_codes/{coupon_code}', 'CouponCodesController@update');
+    $router->delete('coupon_codes/{啥都行}', 'CouponCodesController@destroy');
 });
