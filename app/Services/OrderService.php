@@ -9,7 +9,9 @@ use App\Models\UserAddress;
 use App\Models\Order;
 use App\Models\ProductSku;
 use App\Models\OrderItem;
+use App\Models\CouponCode;
 use App\Exceptions\InvalidRequestException;
+use App\Exceptions\CouponCodeUnavailableException;
 use App\Jobs\CloseOrder;
 use Carbon\Carbon;
 
@@ -26,10 +28,15 @@ class OrderService
         return $orders;
     }
 
-    public function store(UserAddress $address, $remark, $items)
+    public function store(UserAddress $address, $remark, $items, CouponCode $coupon = null)
     {
         $user = Auth::user();
-        $order = \DB::transaction(function () use ($user, $address, $remark, $items) {
+
+        if ($coupon) {
+            $coupon->checkAvailable();
+        }
+
+        $order = \DB::transaction(function () use ($user, $address, $remark, $items, $coupon) {
 
             $address->update(['last_used_at' => Carbon::now()]);
             $order = new Order([
@@ -60,6 +67,15 @@ class OrderService
                     throw new InvalidRequestException('库存不足');
                 }
             }
+            if ($coupon) {
+                $coupon->checkAvailable($totalAmount);
+                $totalAmount = $coupon->getAdjustedPrice($totalAmount);
+                $order->couponCode()->associate($coupon);
+                if ($coupon->changeUsed() <= 0) {
+                    throw new CouponCodeUnavailableException('优惠券没有了');
+                }
+            }
+
             $order->update(['total_amount' => $totalAmount]);
             $skuIds = collect($items)->pluck('sku_id')->all();
             app(CartService::class)->remove($skuIds);

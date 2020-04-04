@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\ProductSku;
 use App\Models\UserAddress;
+use App\Models\CouponCode;
 use App\Services\OrderService;
+use App\Services\CouponCodeService;
 use Illuminate\Http\Request;
 use App\Http\Requests\OrderRequest;
 use App\Http\Requests\SendReviewRequest;
@@ -30,11 +32,17 @@ class OrdersController extends Controller
         return view('orders.show', ['order' => $order]);
     }
 
-    public function store(OrderRequest $request, OrderService $orderService)
+    public function store(OrderRequest $request, OrderService $orderService, CouponCodeService $couponCodeService)
     {
         $address = UserAddress::find($request->input('address_id'));
 
-        return $orderService->store($address, $request->input('remark'), $request->input('items'));
+        $coupon = null;
+
+        if ($code = $request->input('coupon_code')) {
+            $coupon = $couponCodeService->couponCodeExists($code);
+        }
+
+        return $orderService->store($address, $request->input('remark'), $request->input('items'), $coupon);
     }
 
     public function received(Order $order, Request $request)
@@ -47,7 +55,7 @@ class OrdersController extends Controller
 
         $order->update(['ship_status' => Order::SHIP_STATUS_RECEIVED]);
         return $order;
-        // return redirect()->back();
+
     }
 
     public function review(Order $order)
