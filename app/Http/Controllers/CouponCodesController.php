@@ -8,10 +8,10 @@ use App\Services\CouponCodeService;
 
 class CouponCodesController extends Controller
 {
-    public function show($code, CouponCodeService $couponCodeService)
+    public function show($code, Request $request, CouponCodeService $couponCodeService)
     {
         $couponCode = $couponCodeService->couponCodeExists($code);
-        $couponCode->checkAvailable($code);
+        $couponCode->checkAvailable($request->user());
 
         return $couponCode;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Auth;
 use App\Models\Order;
 use App\Models\ProductSku;
 use App\Models\UserAddress;
@@ -122,10 +123,12 @@ class OrdersController extends Controller
 
 
 
-    public function test(OrderService $orderService)
+    public function test(\App\Models\CouponCode $couponCode)
     {
-        $order = Order::find(33);
-        $orderService->updateProductRating($order);
+        $couponCode = $couponCode->find(6);
+        $couponCode->checkAvailable(Auth::user());
+        // $order = Order::find(33);
+        // $orderService->updateProductRating($order);
 
         return view('pages.white');
     }
