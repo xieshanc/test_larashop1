@@ -125,10 +125,11 @@ class OrdersController extends Controller
 
     public function test(\App\Models\CouponCode $couponCode)
     {
-        $couponCode = $couponCode->find(6);
-        $couponCode->checkAvailable(Auth::user());
-        // $order = Order::find(33);
-        // $orderService->updateProductRating($order);
+        echo '<pre>';
+        var_dump($a = collect());
+        var_dump($b = collect([]));
+        var_dump($a == $b);
+        exit;
 
         return view('pages.white');
     }
