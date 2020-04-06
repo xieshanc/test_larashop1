@@ -32,16 +32,6 @@ class Category extends Model
         return array_filter(explode('-', trim($this->path, '-')));
     }
 
-    // 按层级排序取祖类
-    // 这不会套娃🐴
-    public function getAncestorsAttrubute()
-    {
-        return Category::query()
-            ->whereIn('id', $this->path_ids)
-            ->orderBy('level')
-            ->get();
-    }
-
     // 取完整分类名
     public function getFullNameAttribute()
     {
@@ -50,6 +40,17 @@ class Category extends Model
                     ->push($this->name)
                     ->implode(' - ');
     }
+
+    // 按层级排序取祖类
+    // 这不会套娃🐴
+    public function getAncestorsAttribute()
+    {
+        return Category::query()
+            ->whereIn('id', $this->path_ids)
+            ->orderBy('level')
+            ->get();
+    }
+
 
     // 反向一对多
     public function parent()
