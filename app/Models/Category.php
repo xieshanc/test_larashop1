@@ -16,7 +16,7 @@ class Category extends Model
     {
         parent::boot();
         static::creating(function (Category $category) {
-            if (in_null($category->parent_id)) {
+            if (is_null($category->parent_id)) {
                 $category->level = 0;
                 $category->path = '-';
             } else {
@@ -33,7 +33,7 @@ class Category extends Model
     }
 
     // 按层级排序取祖类
-    // 这不会套娃🐴🦄🐸🐒🐮「」『』➕➖➖✖➗🍌🥒🌻🌾🎱🔨💊👴🐔
+    // 这不会套娃🐴
     public function getAncestorsAttrubute()
     {
         return Category::query()
@@ -51,12 +51,14 @@ class Category extends Model
                     ->implode(' - ');
     }
 
-    public function parent() // 反向一对多
+    // 反向一对多
+    public function parent()
     {
         return $this->beLongsTo(Category::class);
     }
 
-    public function children(); // 一对多
+    // 一对多
+    public function children()
     {
         return $this->hasMany(Category::class);
         return $this->hasMany(Category::class, 'parent_id');
