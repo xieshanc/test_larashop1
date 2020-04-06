@@ -8,7 +8,7 @@ use App\Models\CouponCode;
 use Faker\Generator as Faker;
 
 $factory->define(Order::class, function (Faker $faker) {
-    $user = User::query()->inRandonOrder()->first();
+    $user = User::query()->inRandomOrder()->first();
     $address = $user->addresses()->inRandomOrder()->first();
     $refund = random_int(0, 10) < 1;
     $ship = $faker->randomElement(array_keys(Order::$shipStatusMap));
@@ -35,7 +35,7 @@ $factory->define(Order::class, function (Faker $faker) {
         'closed'            => false,
         'reviewed'          => random_int(0, 10) > 2,
         'ship_status'       => $ship,
-        'ship_data'         => $ship === Order::SHIP_STATUS_PENDINT ? null : [
+        'ship_data'         => $ship === Order::SHIP_STATUS_PENDING ? null : [
             'express_compant'   => $faker->company,
             'express_no'        => $faker->uuid,
         ],

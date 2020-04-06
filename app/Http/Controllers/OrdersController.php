@@ -123,14 +123,8 @@ class OrdersController extends Controller
 
 
 
-    public function test(\App\Models\CouponCode $couponCode)
+    public function test(\App\Models\Category $category)
     {
-        echo '<pre>';
-        var_dump($a = collect());
-        var_dump($b = collect([]));
-        var_dump($a == $b);
-        exit;
-
         return view('pages.white');
     }
 }

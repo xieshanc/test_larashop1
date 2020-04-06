@@ -16,11 +16,6 @@ class Product extends Model
         'on_sale' => 'boolean',
     ];
 
-    public function skus()
-    {
-        return $this->hasMany(ProductSku::class);
-    }
-
     public function getImageUrlAttribute()
     {
         if (Str::startsWith($this->attributes['image'], ['http://', 'https://'])) {
@@ -29,4 +24,15 @@ class Product extends Model
         return \Storage::disk('public')->url($this->image);
         return \Storage::disk('public')->url($this->attributes['image']);
     }
+
+    public function skus()
+    {
+        return $this->hasMany(ProductSku::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
 }

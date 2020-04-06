@@ -12,7 +12,7 @@ class UsersSeeder extends Seeder
      */
     public function run()
     {
-        $users = factory(\User::class)->times(100)->make()->makeVisible(['password'])->toArray();
+        $users = factory(User::class)->times(10)->make()->makeVisible(['password'])->toArray();
         User::insert($users);
 
         $user1 = User::find(1);

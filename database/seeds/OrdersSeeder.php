@@ -20,12 +20,12 @@ class OrdersSeeder extends Seeder
         $products = collect([]);
 
         foreach ($orders as $order) {
-            $items = factory(OrderItem::class, random_int(1, 3)->create([
+            $items = factory(OrderItem::class, random_int(1, 3))->create([
                 'order_id'      => $order->id,
                 'rating'        => $order->reviewed ? random_int(1, 5) : null,
                 'review'        => $order->reviewed ? $faker->sentence : null,
                 'reviewed_at'   => $order->reviewed ? $faker->dateTimeBetween($order->paid_at) : null,
-            ]));
+            ]);
             $total = $items->sum(function (OrderItem $item) {
                 return $item->price * $item->amount;
             });
@@ -41,7 +41,7 @@ class OrdersSeeder extends Seeder
         }
 
         $products->unique('id')->each(function (Product $product) {
-            $resule = OrderItem::query()
+            $result = OrderItem::query()
                 ->where('product_id', $product->id)
                 ->whereHas('order', function ($query) {
                     $query->whereNotNull('paid_at');

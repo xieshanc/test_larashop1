@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Eluquent\Model;
+use Illuminate\Database\Eloquent\Model;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,8 +15,14 @@ class DatabaseSeeder extends Seeder
         Model::unguard();
 
         $this->call(UsersSeeder::class);
-        $this->call(UserAddressesSeeder::class);
+        $this->call(UserAddressSeeder::class);
         $this->call(ProductsSeeder::class);
+
+        // var_dump(ProductsSeeder::class);
+        // var_dump(CouponCodesSeeder::class);
+        // var_dump(class_exists(ProductsSeeder::class));
+        // var_dump(class_exists(CouponCodesSeeder::class));
+        // exit;
         $this->call(CouponCodesSeeder::class);
         $this->call(OrdersSeeder::class);
 
