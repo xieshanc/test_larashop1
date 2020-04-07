@@ -36,6 +36,7 @@ class CategoriesController extends AdminController
     {
         $grid = new Grid(new Category);
 
+        $grid->model()->orderBy('path');
         $grid->id('ID')->sortable();
         $grid->name('名称');
         $grid->level('层级');
