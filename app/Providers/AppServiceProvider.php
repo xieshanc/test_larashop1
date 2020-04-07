@@ -50,5 +50,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         \App\Models\Order::observe(\App\Observers\OrderObserver::class);
+        // 给视图里注入变量
+        \View::composer(['products.index', 'products.show'], \App\Http\ViewComposers\CategoryTreeComposer::class);
     }
 }

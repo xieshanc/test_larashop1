@@ -125,6 +125,9 @@ class OrdersController extends Controller
 
     public function test(\App\Models\Category $category)
     {
+        $categories = app(\App\Services\CategoryService::class)->getCategoryTree();
+        var_dump($categories);
+
         return view('pages.white');
     }
 }

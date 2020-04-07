@@ -61,7 +61,6 @@ class Category extends Model
     // 一对多
     public function children()
     {
-        return $this->hasMany(Category::class);
         return $this->hasMany(Category::class, 'parent_id');
     }
 
