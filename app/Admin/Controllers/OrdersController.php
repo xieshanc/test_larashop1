@@ -33,6 +33,7 @@ class OrdersController extends AdminController
 
         $grid->model()->whereNotNull('paid_at')->orderBy('paid_at', 'desc');
 
+        $grid->id('ID');
         $grid->no('订单流水号');
         $grid->column('user.name', '买家'); // 关联
         $grid->total_amount('总金额')->sortable();
@@ -60,7 +61,8 @@ class OrdersController extends AdminController
 
     public function show($id, Content $content)
     {
-        return $content->header('查看订单')->body(view('admin.orders.show', ['order' => Order::find($id)]));
+        $order = Order::find($id);
+        return $content->header('查看订单')->body(view('admin.orders.show', ['order' => $order]));
     }
 
     public function ship(Order $order, Request $request)
@@ -71,6 +73,11 @@ class OrdersController extends AdminController
 
         if ($order->ship_status !== Order::SHIP_STATUS_PENDING) {
             throw new InvalidRequestException('该订单已发货');
+        }
+
+        if ($order->type === Order::TYPE_CROWDFUNDING &&
+            $order->items[0]->product->crowdfunding->status != CrowdfundingProduct::STATUS_SUCCESS) {
+            throw new InvalidRequestException('众筹成功后才能发货');
         }
 
         $data = $this->validate($request, [

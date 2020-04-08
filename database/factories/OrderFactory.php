@@ -36,7 +36,7 @@ $factory->define(Order::class, function (Faker $faker) {
         'reviewed'          => random_int(0, 10) > 2,
         'ship_status'       => $ship,
         'ship_data'         => $ship === Order::SHIP_STATUS_PENDING ? null : [
-            'express_compant'   => $faker->company,
+            'express_company'   => $faker->company,
             'express_no'        => $faker->uuid,
         ],
         'extra'             => $refund ? ['refund_reason' => $faker->sentence] : [],

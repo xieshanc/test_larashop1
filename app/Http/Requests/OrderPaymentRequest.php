@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Exceptions\InvalidRequestException;
 
 class OrderPaymentRequest extends FormRequest
 {
@@ -23,12 +24,15 @@ class OrderPaymentRequest extends FormRequest
      */
     public function rules()
     {
+        $order = $this->order;
+
+        if ($order->paid_at || $order->closed) {
+            throw new InvalidRequestException('订单状态不正确');
+        }
+
         return [
-            'order' => [function ($attribute, $value, $fail) {
-                echo '<pre>';
-                var_dump($attribute, $value, $fail);
-                exit;
-            }],
+
         ];
+
     }
 }

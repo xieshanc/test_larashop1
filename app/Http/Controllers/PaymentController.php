@@ -16,9 +16,6 @@ class PaymentController extends Controller
     {
         $this->authorize('own', $order);
 
-        if ($order->paid_at || $order->closed) {
-            throw new InvalidRequestException('订单状态不正确');
-        }
         return app('alipay')->web([
             'out_trade_no' => $order->no,
             'total_amount' => $order->total_amount,
@@ -40,16 +37,16 @@ class PaymentController extends Controller
     public function alipayNotify()
     {
         $data = app('alipay')->verify();
+        $order = Order::where('no', $data->out_trade_no)->first();
 
         if (!in_array($data->trade_status, ['TRADE_SUCCESS', 'TRADE_FINISHED'])) {
             return app('alipay')->success();
         }
-        $order = Order::where('no', $data->out_trade_no)->first();
 
-        if (!$order) return 'fail';
-        if ($order->paid_at) {
-            return app('alipay')->success();
-        }
+        // if (!$order) return 'fail';
+        // if ($order->paid_at) {
+        //     return app('alipay')->success();
+        // }
 
         $order->update([
             'paid_at'           => Carbon::now(),
