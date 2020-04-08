@@ -51,7 +51,7 @@ abstract class CommonProductsController extends AdminController
         $form->quill('description', '商品描述')->rules('required');
         $form->radio('on_sale', '上架')->options(['1' => '是', '0' => '否'])->default('0');
 
-        $form->customForm($form);
+        $this->customForm($form);
 
         $form->hasMany('skus', 'SKU 列表', function (Form\NestedForm $form) {
             $form->text('title', 'SKU 名称')->rules('required');

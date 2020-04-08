@@ -40,6 +40,6 @@ class CrowdfundingProductsController extends CommonProductsController
     protected function customForm(Form $form)
     {
         $form->text('crowdfunding.target_amount', '众筹金额目标')->rules('required|numeric|min:0.01');
-        $form->datetime('crowdfunding.end_at')->rules('required|date');
+        $form->datetime('crowdfunding.end_at', '结束时间')->rules('required|date');
     }
 }

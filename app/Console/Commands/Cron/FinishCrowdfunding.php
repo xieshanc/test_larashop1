@@ -44,7 +44,7 @@ class FinishCrowdfunding extends Command
             ->where('end_at', '<=', Carbon::now())
             ->where('status', CrowdfundingProduct::STATUS_FUNDING)
             ->get()
-            ->each(function (CrowdfundingProcuts $crowdfunding) {
+            ->each(function (CrowdfundingProduct $crowdfunding) {
                 if ($crowdfunding->target_amount > $crowdfunding->total_amount) {
                     $this->crowdfundingFailed($crowdfunding);
                 } else {
