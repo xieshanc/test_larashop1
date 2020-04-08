@@ -43,16 +43,18 @@ class PaymentController extends Controller
             return app('alipay')->success();
         }
 
-        // if (!$order) return 'fail';
-        // if ($order->paid_at) {
-        //     return app('alipay')->success();
-        // }
+        if (!$order) return 'fail';
+        if ($order->paid_at) {
+            // return app('alipay')->success();
+        } else {
+            $order->update([
+                'paid_at'           => Carbon::now(),
+                'payment_method'    => 'alipay',
+                'payment_no'        => $data->trade_no,
+            ]);
+        }
 
-        $order->update([
-            'paid_at'           => Carbon::now(),
-            'payment_method'    => 'alipay',
-            'payment_no'        => $data->trade_no,
-        ]);
+
 
         $this->afterPaid($order);
         return app('alipay')->success();
