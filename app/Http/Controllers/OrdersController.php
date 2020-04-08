@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\OrderRequest;
 use App\Http\Requests\SendReviewRequest;
 use App\Http\Requests\ApplyRefundRequest;
-use App\Jobs\CloseOrder;
+use App\Http\Requests\CrowdfundingOrderRequest;
 use App\Events\OrderReviewedEvent;
 use App\Exceptions\InvalidRequestException;
 use Carbon\Carbon;
@@ -36,7 +36,6 @@ class OrdersController extends Controller
     public function store(OrderRequest $request, OrderService $orderService, CouponCodeService $couponCodeService)
     {
         $address = UserAddress::find($request->input('address_id'));
-
         $coupon = null;
 
         if ($code = $request->input('coupon_code')) {
@@ -44,6 +43,15 @@ class OrdersController extends Controller
         }
 
         return $orderService->store($address, $request->input('remark'), $request->input('items'), $coupon);
+    }
+
+    public function crowdfunding(CrowdfundingOrderRequest $request, OrderService $orderService)
+    {
+        $sku = ProductSku::find($request->input('sku_id'));
+        $address = UserAddress::find($request->input('address_id'));
+        $amount = $request->input('amount');
+
+        return $orderService->crowdfunding($address, $sku, $amount);
     }
 
     public function received(Order $order, Request $request)
@@ -91,6 +99,7 @@ class OrdersController extends Controller
             $order->reviewed = true;
             $order->save();
 
+            // 没必要用 event
             // event(new OrderReviewedEvent($order));
             $orderService->updateProductRating($order);
 
@@ -122,12 +131,4 @@ class OrdersController extends Controller
     }
 
 
-
-    public function test(\App\Models\Category $category)
-    {
-        $categories = app(\App\Services\CategoryService::class)->getCategoryTree();
-        var_dump($categories);
-
-        return view('pages.white');
-    }
 }

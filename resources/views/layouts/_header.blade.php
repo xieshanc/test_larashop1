@@ -38,7 +38,7 @@
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <img src="脏" class="img-responsive img-circle" width="30px" height="30px">
+            <img src="http://larashop1.local/storage/images/%E5%AD%99%E5%93%A5.jpg" class="img-responsive img-circle" width="30px" height="30px">
             {{ Auth::user()->name }}
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">

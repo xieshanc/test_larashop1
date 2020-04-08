@@ -86,6 +86,45 @@ class OrderService
         return $order;
     }
 
+    public function crowdfunding(UserAddress $address, ProductSku $sku, $amount)
+    {
+        $user = Auth::user();
+        $order = \DB::transaction(function () use ($user, $address, $sku, $amount) {
+            $address->update(['last_used_at' => Carbon::now()]);
+            $order = new Order([
+                'address' => [
+                    'address'   => $address->full_address,
+                    'zip'       => $address->zip,
+                    'contact_name'  => $address->contact_name,
+                    'contact_phone' => $address->contact_phone,
+                ],
+                'remark'    => '',
+                'total_amount'  => $sku->price * $amount,
+            ]);
+            $order->user()->associate($user);
+            $order->save();
+
+            $item = $order->items()->make([
+                'amount'    => $amount,
+                'price'     => $sku->price,
+            ]);
+            $item->product()->associate($sku->product_id);
+            $item->productSku()->associate($sku);
+            $item->save();
+
+            if ($sku->decreaseStock($amount) <= 0) {
+                throw new InvalidRequestException('商品库存不足');
+            }
+            return $order;
+        });
+
+        $crowdfundingTtl = $sku->product->crowdfunding->end_at->getTimestamp() - time();
+        dispatch(new CloseOrder($order, min(config('app.order_ttl'), $crowdfundingTtl)));
+        // dispatch(new CloseOrder($order, $crowdfungingTtl));
+
+        return $order;
+    }
+
     public function updateProductSoldCount(Order $order)
     {
         // 预加载商品数据
