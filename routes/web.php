@@ -50,6 +50,8 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
 
     Route::post('crowdfunding_orders', 'OrdersController@crowdfunding')->name('crowdfunding_orders.store');
 
+    Route::get('installments', 'InstallmentsController@index')->name('installments.index');
+
 });
 Route::post('payment/alipay/notify', 'PaymentController@alipayNotify')->name('payment.alipay.notify');
 Route::post('payment/wechat/notify', 'PaymentController@wechatNotify')->name('payment.wechat.notify');
