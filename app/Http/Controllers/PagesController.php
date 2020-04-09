@@ -35,4 +35,16 @@ class PagesController extends Controller
 
         return view('pages.white');
     }
+
+    public function getUrl(Request $request)
+    {
+        return $request->all();
+    }
+
+    public function postUrl(Request $request)
+    {
+        echo '<pre>';
+        var_dump($request->all());
+        exit;
+    }
 }

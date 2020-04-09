@@ -61,6 +61,8 @@ Route::post('payment/wechat/notify', 'PaymentController@wechatNotify')->name('pa
 Route::post('payment/wechat/refund_notify', 'PaymentController@wechatRefundNotify')->name('payment.wechat.refund_notify');
 
 Route::get('test', 'PagesController@test');
+Route::get('get', 'PagesController@getUrl');
+Route::post('post', 'PagesController@postUrl');
 
 // Route::get('alipay', function () {
 //     return app('alipay')->web([
