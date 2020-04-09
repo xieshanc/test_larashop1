@@ -83,7 +83,7 @@ class OrderService
             return $order;
         }); // END TRANSACTION
 
-        dispatch(new CloseOrder($order, config('app.order_ttl')));
+        // dispatch(new CloseOrder($order, config('app.order_ttl')));
         return $order;
     }
 
