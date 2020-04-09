@@ -21,13 +21,6 @@ Route::get('products/{product}', 'ProductsController@show')->name('products.show
 // Route::resource('products', 'ProductsController');
 
 Route::group(['middleware' => ['auth', 'verified']], function () {
-    // Route::get('user_addresses', 'UserAddressesController@index')->name('user_addresses.index');
-    // Route::get('user_addresses/create', 'UserAddressesController@create')->name('user_addresses.create');
-    // Route::post('user_addresses', 'UserAddressesController@store')->name('user_addresses.store');
-    // Route::get('user_addresses/{user_address}/edit', 'UserAddressesController@edit')->name('user_addresses.edit');
-    // Route::patch('user_addresses/{user_address}', 'UserAddressesController@update')->name('user_addresses.update');
-    // Route::delete('user_addresses/{user_address}', 'UserAddressesController@destroy')->name('user_addresses.destroy');
-    // Route::resource('user_addresses', 'UserAddressesController', ['only' => ['index', 'create', 'store', 'edit', 'update', 'destroy']]);
     Route::resource('user_addresses', 'UserAddressesController', ['except' => ['show']]);
 
     Route::post('products/{product}/favorite', 'ProductsController@favor')->name('products.favor');
@@ -45,6 +38,7 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::get('payment/{order}/alipay', 'PaymentController@payByAlipay')->name('payment.alipay');
     Route::get('payment/alipay/return', 'PaymentController@alipayReturn')->name('payment.alipay.return');
     Route::get('payment/{order}/wechat', 'PaymentController@payByWechat')->name('payment.wechat');
+    Route::post('payment/{order}/installment', 'PaymentController@payByInstallment')->name('payment.installment');
 
     Route::post('orders/{order}/received', 'OrdersController@received')->name('orders.received');
     Route::get('orders/{order}/review', 'OrdersController@review')->name('orders.review.show');
@@ -55,6 +49,7 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::get('coupon_codes/{code}', 'CouponCodesController@show')->name('coupon_codes.show');
 
     Route::post('crowdfunding_orders', 'OrdersController@crowdfunding')->name('crowdfunding_orders.store');
+
 });
 Route::post('payment/alipay/notify', 'PaymentController@alipayNotify')->name('payment.alipay.notify');
 Route::post('payment/wechat/notify', 'PaymentController@wechatNotify')->name('payment.wechat.notify');

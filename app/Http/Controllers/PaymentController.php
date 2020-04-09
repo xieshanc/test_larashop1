@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\OrderPaymentRequest;
+use Illuminate\Validation\Rule;
 use App\Models\Order;
+use App\Models\Installment;
 use App\Exception\InvalidRequestException;
 use Carbon\Carbon;
 use Endroid\QrCode\QrCode;
@@ -12,6 +14,53 @@ use App\Events\OrderPaid;
 
 class PaymentController extends Controller
 {
+    public function payByInstallment(Order $order, Request $request)
+    {
+        $this->authorize('own', $order);
+        if ($order->paid_at && $order->closed) {
+            throw new InvalidRequestException('订单状态不正确');
+        }
+        if ($order->total_amount < config('app.min_installment_amount')) {
+            throw new InvalidRequestException('钱太少了，不能分期');
+        }
+        $this->validate($request, [
+            'count' => ['required', Rule::in(array_keys(config('app.installment_fee_rate')))],
+        ]);
+
+        Installment::query()
+            ->where('order_id', $order->id)
+            ->where('status', Installment::STATUS_PENDING)
+            ->delete();
+        $count = $request->input('count');
+        $installment = new Installment([
+            'total_amount'  => $order->total_amount,
+            'count'         => $count,
+            'fee_rate'      => config('app.installment_fee_rate')[$count],
+            'fine_rate'     => config('app.installment_fine_rate'),
+        ]);
+        $installment->user()->associate($request->user());
+        $installment->order()->associate($order);
+        $installment->save();
+
+        $dueDate = Carbon::tomorrow();
+
+        $base = big_number($order->total_amount)->divide($count)->getValue();
+        $fee = big_number($base)->multiply($installment->fee_rate)->divide(100)->getValue();
+        for ($i = 0; $i < $count; $i++) {
+            if ($i === $count - 1) {
+                $base = big_number($order->total_amount)->subtract(big_number($base)->multiply($count - 1));
+            }
+            $installment->items()->create([
+                'sequence'  => $i,
+                'base'      => $base,
+                'fee'       => $fee,
+                'due_date'  => $dueDate,
+            ]);
+            $dueDate = $dueDate->copy()->addDays(30);
+        }
+        return $installment;
+    }
+
     public function payByAlipay(Order $order, OrderPaymentRequest $request)
     {
         $this->authorize('own', $order);
@@ -53,8 +102,6 @@ class PaymentController extends Controller
                 'payment_no'        => $data->trade_no,
             ]);
         }
-
-
 
         $this->afterPaid($order);
         return app('alipay')->success();
