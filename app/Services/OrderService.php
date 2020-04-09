@@ -4,7 +4,6 @@ namespace App\Services;
 
 use DB;
 use Auth;
-// use App\Models\User;
 use App\Models\UserAddress;
 use App\Models\Order;
 use App\Models\ProductSku;
@@ -13,6 +12,7 @@ use App\Models\CouponCode;
 use App\Exceptions\InvalidRequestException;
 use App\Exceptions\CouponCodeUnavailableException;
 use App\Jobs\CloseOrder;
+use App\Jobs\RefundInstallmentOrderJob;
 use Carbon\Carbon;
 
 class OrderService
@@ -214,6 +214,13 @@ class OrderService
                     'refund_no' => $refundNo,
                     'refund_status' => Order::REFUND_STATUS_PROCESSING,
                 ]);
+                break;
+            case 'installment':
+                $order->update([
+                    'refund_no' => Order::getAvailableRefundNo(),
+                    'refund_status' => Order::REFUND_STATUS_PROCESSING, // 处理中
+                ]);
+                dispatch(new RefundInstallmentOrderJob($order));
                 break;
             default:
                 throw new InternalException('未知订单支付方式：' . $order->payment_method);

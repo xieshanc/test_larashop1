@@ -17,21 +17,9 @@ class PagesController extends Controller
         return view('pages.root');
     }
 
-    public function test(CrowdfundingProduct $crowdfunding)
+    public function test()
     {
-        $crowdfunding = CrowdfundingProduct::find(2);
-        $orderService = app(OrderService::class);
 
-        Order::query()
-            ->where('type', Order::TYPE_CROWDFUNDING)
-            ->whereNotNull('paid_at')
-            ->whereHas('items', function ($query) use ($crowdfunding) {
-                $query->where('product_id', $crowdfunding->product_id);
-            })
-            ->get()
-            ->each(function (Order $order) use ($orderService) {
-                $orderService->refundOrder($order);
-            });
 
         return view('pages.white');
     }

@@ -73,6 +73,25 @@ class Installment extends Model
         return self::$statusMap[$this->status];
     }
 
+    public function refreshRefundStatus()
+    {
+        // 查询是否每笔要退的分期都成功
+        $allSuccess = true;
+        $this->load(['items']);
+        foreach ($this->items as $item) {
+            if ($item->paid_at && $item->refund_status !== InstallmentItem::REFUND_STATUS_SUCCESS) {
+                $allSuccess = false;
+                break;
+            }
+        }
 
+        // 如果所有都成功了，把订单的退款状态也改成已成功
+        if ($allSuccess) {
+            $this->order->update([
+                'refund_status' => Order::REFUND_STATUS_SUCCESS,
+            ]);
+        }
+
+    }
 
 }

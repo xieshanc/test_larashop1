@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Models\Installment;
+use App\Models\InstallmentItem;
 use Illuminate\Http\Request;
 use App\Models\InvalidRequestException;
 use App\Events\OrderPaid;
@@ -126,6 +128,50 @@ class InstallmentsController extends Controller
             });
             return app('alipay')->success();
         }
+    }
+
+    public function wechatRefundNotify(Request $request)
+    {
+        // 给微信的失败响应
+        $failXml = '<xml><return_code><![CDATA[FAIL]]></return_code><return_msg><![CDATA[FAIL]]></return_msg></xml>';
+
+        $data = app('wechat_pay')->verify(null, true);
+        list($no, $sequence) = explode('_', $data['out_refund_no']);
+
+        // $order_id = select * from `orders` where `refund_no` = {$no};
+        // $installment_id = select * from `installments` where `order_id` = {$order_id};
+        // select * from `installment_items` where `installment_id` = {$installment_id} and `sequence` = {$sequence};
+
+        // select * from `installment_items` where exists(select * from `installments` where `installment_items`.`installment_id` = `installments`.`id` and exists(select * from `orders` where `installments`.`order_id` = `orders`.`id` and `orders`.`refund_no` = '20200409162525042961'));
+
+        $item = InstallmentItem::query()
+            ->whereHas('installment', function ($query) use ($no) {
+                $query->whereHas('order', function ($query) use ($no) {
+                    $query->where('refund_no', $no);
+                });
+            })
+            ->where('sequence', $sequence)
+            ->first();
+
+        if (!$item) {
+            return $failXml;
+        }
+
+        if ($data['refund_status'] === 'SUCCESS') {
+            $item->update([
+                'refund_status' => InstallmentItem::REFUND_STATUS_SUCCESS,
+            ]);
+            $item->installment->refreshRefundStatus();
+        } else {
+            $item->update([
+                'refund_status' => InstallmentItem::REFUND_STATUS_FAILED,
+            ]);
+        }
+        return app('wechat_pay')->success();
+
+
+
+
 
     }
 }
