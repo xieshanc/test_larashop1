@@ -68,6 +68,11 @@ class Installment extends Model
         // return $no;
     }
 
+    public function getStatusTextAttribute()
+    {
+        return self::$statusMap[$this->status];
+    }
+
 
 
 }

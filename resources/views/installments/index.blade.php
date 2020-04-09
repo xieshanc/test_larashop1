@@ -26,8 +26,8 @@
                 <td>￥{{ $installment->total_amount }}</td>
                 <td>{{ $installment->count }}</td>
                 <td>{{ $installment->fee_rate }}%</td>
-                <td>{{ \App\Models\Installment::$statusMap[$installment->status] }}</td>
-                <td><a class="btn btn-primary btn-sm" href="">查看</a></td>
+                <td>{{ $installment->status_text }}</td>
+                <td><a class="btn btn-primary btn-sm" href="{{ route('installments.show', [$installment->id]) }}">查看</a></td>
               </tr>
             @endforeach
             </tbody>
