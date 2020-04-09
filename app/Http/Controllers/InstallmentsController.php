@@ -66,24 +66,47 @@ class InstallmentsController extends Controller
         if (!in_array($data->trade_status, ['TRADE_SUCCESS', 'TRADE_FINISHED'])) {
             return app('alipay')->success();
         }
+        if ($this->paid($data->out_trade_no, 'alipay', $data->trade_no)) {
+            return app('alipay')->success();
+        }
+        return 'fail';
+    }
 
-        list($no, $sequence) = explode('_', $data->out_trade_no);
+    public function wechatNotify()
+    {
+        $data = app('wechat_pay')->verify();
+        if ($this->paid($data->out_trade_no, 'wechat', $data->transaction_id)) {
+            return app('wechat_pay')->success();
+        }
+        return 'fail';
+    }
+
+
+
+    /**
+     * @param  [type] $outTradeNo    [本项目定义的单号]
+     * @param  [type] $paymentMethod [支付方式]
+     * @param  [type] $paymentNo     [支付的平台定义的单号]
+     */
+    protected function paid($outTradeNo, $paymentMethod, $paymentNo)
+    {
+        list($no, $sequence) = explode('_', $outTradeNo);
 
         if (!$installment = Installment::where('no', $no)->first()) {
-            return 'fail';
+            return false;
         }
         if (!$item = $installment->items()->where('sequence', $sequence)->first()) {
-            return 'fail';
+            return false;
         }
 
         if ($item->paid_at) {
             return app('alipay')->success();
         } else {
-            \DB::transaction(function () use ($data, $no, $installment, $item) {
+            \DB::transaction(function () use ($no, $installment, $item, $paymentNo) {
                 $item->update([
                     'paid_at'           => Carbon::now(),
                     'payment_method'    => 'alipay',
-                    'payment_no'        => $data->trade_no,
+                    'payment_no'        => $paymentNo,
                 ]);
 
                 if ($item->sequence === 0) {
