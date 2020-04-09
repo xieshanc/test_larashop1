@@ -10,15 +10,10 @@ class InstallmentPolicy
 {
     use HandlesAuthorization;
 
-    public function own(User $user, Installment $installment)
-    {
-        return $user->isOwnerOf($installment);
-    }
-
-    public function show(User $user, Installment $installment)
-    {
-        return $user->isOwnerOf($installment);
-    }
+    // public function own(User $user, Installment $installment)
+    // {
+    //     return $user->isOwnerOf($installment);
+    // }
 
     /**
      * Determine whether the user can view any installments.
@@ -40,7 +35,7 @@ class InstallmentPolicy
      */
     public function view(User $user, Installment $installment)
     {
-        //
+        return $user->isOwnerOf($installment);
     }
 
     /**

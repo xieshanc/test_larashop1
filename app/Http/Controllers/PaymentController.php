@@ -69,17 +69,19 @@ class PaymentController extends Controller
             'out_trade_no' => $order->no,
             'total_amount' => $order->total_amount,
             'subject'      => '支付 LaraShop 的订单：' . $order->no,
+            'return_url'   => route('orders.show', ['order' => $order]),
+            // 'return_url'   => route('payment.alipay.return', ['order' => $order->id]),
         ]);
     }
 
-    public function alipayReturn()
+    public function alipayReturn(Order $order)
     {
         try {
             $data = app('alipay')->verify();
         } catch (\Exception $e) {
             return view('pages.error', ['msg' => '数据不正确']);
         }
-        return view('pages.success', ['msg' => '付款成功']);
+        return redirect()->route('orders.show', ['order' => $order]);
 
     }
 
@@ -101,9 +103,9 @@ class PaymentController extends Controller
                 'payment_method'    => 'alipay',
                 'payment_no'        => $data->trade_no,
             ]);
+            $this->afterPaid($order);
         }
 
-        $this->afterPaid($order);
         return app('alipay')->success();
     }
 
@@ -150,4 +152,10 @@ class PaymentController extends Controller
     {
         event(new OrderPaid($order));
     }
+
+    public function paidReturn()
+    {
+
+    }
 }
+

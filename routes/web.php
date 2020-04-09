@@ -36,9 +36,13 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::post('orders', 'OrdersController@store')->name('orders.store');
 
     Route::get('payment/{order}/alipay', 'PaymentController@payByAlipay')->name('payment.alipay');
-    Route::get('payment/alipay/return', 'PaymentController@alipayReturn')->name('payment.alipay.return');
+    Route::get('payment/alipay/return/{order}', 'PaymentController@alipayReturn')->name('payment.alipay.return');
     Route::get('payment/{order}/wechat', 'PaymentController@payByWechat')->name('payment.wechat');
     Route::post('payment/{order}/installment', 'PaymentController@payByInstallment')->name('payment.installment');
+    Route::get('installments/{installment}/alipay', 'InstallmentsController@payByAlipay')->name('installments.alipay');
+    Route::get('installments/alipay/return', 'InstallmentsController@alipayReturn')->name('installments.alipay.return');
+
+    Route::get('payment/return', 'PaymentController@paidReturn')->name('payment.return');
 
     Route::post('orders/{order}/received', 'OrdersController@received')->name('orders.received');
     Route::get('orders/{order}/review', 'OrdersController@review')->name('orders.review.show');
@@ -57,6 +61,7 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
 Route::post('payment/alipay/notify', 'PaymentController@alipayNotify')->name('payment.alipay.notify');
 Route::post('payment/wechat/notify', 'PaymentController@wechatNotify')->name('payment.wechat.notify');
 Route::post('payment/wechat/refund_notify', 'PaymentController@wechatRefundNotify')->name('payment.wechat.refund_notify');
+Route::post('installments/alipay/notify', 'InstallmentsController@alipayNotify')->name('installments.alipay.notify');
 
 Route::get('test', 'PagesController@test');
 Route::get('get', 'PagesController@getUrl');
