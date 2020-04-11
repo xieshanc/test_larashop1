@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\ProductSku;
 use App\Models\UserAddress;
 use App\Models\CouponCode;
@@ -19,7 +20,18 @@ class PagesController extends Controller
 
     public function test()
     {
+        $product = Product::find(60);
 
+        $res = $product->properties->groupBy('name')->map(function ($property) {
+            // echo '<pre>';
+            // var_dump($property->pluck('value')->all());
+            // exit;
+            return $property->pluck('value')->toArray();
+        });
+
+        echo '<pre>';
+        var_dump($res);
+        exit;
 
         return view('pages.white');
     }
