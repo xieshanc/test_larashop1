@@ -11,7 +11,7 @@ class Product extends Model
     const TYPE_CROWDFUNDING = 'crowdfunding';
 
     protected $fillable = [
-        'title', 'description', 'image', 'on_sale', 'price', 'type',
+        'title', 'long_title', 'description', 'image', 'on_sale', 'price', 'type',
         // 'rating', 'sold_count', 'review_count',
     ];
 
