@@ -20,20 +20,26 @@ class PagesController extends Controller
 
     public function test()
     {
-        $product = Product::find(60);
+        $arr = Product::find(1)->toESArray();
 
-        $res = $product->properties->groupBy('name')->map(function ($property) {
-            // echo '<pre>';
-            // var_dump($property->pluck('value')->all());
-            // exit;
-            return $property->pluck('value')->toArray();
-        });
+        // $res = app('es')->index([
+        //     'index' => 'productdffe',
+        //     'id' => $arr['id'],
+        //     'type'  => '_doc',
+        //     'body'  => $arr,
+        // ]);
+        // echo '<pre>';
+        // var_dump($res);
+        // exit;
 
+
+        $res = app('es')->get([
+            'index' => 'productdffe',
+            'id'    => 1,
+        ]);
         echo '<pre>';
         var_dump($res);
         exit;
-
-        return view('pages.white');
     }
 
     public function getUrl(Request $request)
