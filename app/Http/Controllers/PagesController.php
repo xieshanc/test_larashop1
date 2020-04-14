@@ -20,23 +20,7 @@ class PagesController extends Controller
 
     public function test()
     {
-        $arr = Product::find(1)->toESArray();
-
-        // $res = app('es')->index([
-        //     'index' => 'productdffe',
-        //     'id' => $arr['id'],
-        //     'type'  => '_doc',
-        //     'body'  => $arr,
-        // ]);
-        // echo '<pre>';
-        // var_dump($res);
-        // exit;
-
-
-        $res = app('es')->get([
-            'index' => 'productdffe',
-            'id'    => 1,
-        ]);
+        $res = app('es')->get(['index' => 'products', 'id' => 1]);
         echo '<pre>';
         var_dump($res);
         exit;

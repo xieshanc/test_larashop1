@@ -26,6 +26,8 @@
         <!-- 顶部类目菜单结束 -->
       </ul>
 
+      <a href="/test">测试</a>
+
       <!-- Right Side Of Navbar -->
       <ul class="navbar-nav navbar-right">
         <!-- Authentication Links -->
