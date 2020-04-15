@@ -20,7 +20,7 @@ class PagesController extends Controller
 
     public function test()
     {
-        $res = app('es')->get(['index' => 'products', 'id' => 1]);
+        $res = Product::find(71)->toESArray();
         echo '<pre>';
         var_dump($res);
         exit;
@@ -38,3 +38,4 @@ class PagesController extends Controller
         exit;
     }
 }
+
