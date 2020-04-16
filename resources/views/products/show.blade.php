@@ -142,33 +142,63 @@
           </div>
         </div>
         <div role="tabpanel" class="tab-pane" id="product-reviews-tab">
-  <!-- 评论列表开始 -->
-  <table class="table table-bordered table-striped">
-    <thead>
-    <tr>
-      <td>用户</td>
-      <td>商品</td>
-      <td>评分</td>
-      <td>评价</td>
-      <td>时间</td>
-    </tr>
-    </thead>
-    <tbody>
-      @foreach($reviews as $review)
-      <tr>
-        <td>{{ $review->order->user->name }}</td>
-        <td>{{ $review->productSku->title }}</td>
-        <td>{{ str_repeat('★', $review->rating) }}{{ str_repeat('☆', 5 - $review->rating) }}</td>
-        <td>{{ $review->review }}</td>
-        <td>{{ $review->reviewed_at->format('Y-m-d H:i') }}</td>
-      </tr>
-      @endforeach
-    </tbody>
-  </table>
-  <!-- 评论列表结束 -->
-</div>
+          <!-- 评论列表开始 -->
+          <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+              <td>用户</td>
+              <td>商品</td>
+              <td>评分</td>
+              <td>评价</td>
+              <td>时间</td>
+            </tr>
+            </thead>
+            <tbody>
+              @foreach($reviews as $review)
+              <tr>
+                <td>{{ $review->order->user->name }}</td>
+                <td>{{ $review->productSku->title }}</td>
+                <td>{{ str_repeat('★', $review->rating) }}{{ str_repeat('☆', 5 - $review->rating) }}</td>
+                <td>{{ $review->review }}</td>
+                <td>{{ $review->reviewed_at->format('Y-m-d H:i') }}</td>
+              </tr>
+              @endforeach
+            </tbody>
+          </table>
+          <!-- 评论列表结束 -->
+        </div>
       </div>
     </div>
+
+    <!-- 猜你喜欢开始 -->
+    @if(count($similar) > 0)
+      <div class="similar-products">
+        <div class="title">猜你喜欢</div>
+        <div class="row products-list">
+          <!-- 这里不能使用 $product 作为 foreach 出来的变量，否则会覆盖掉当前页面的 $product 变量 -->
+          @foreach($similar as $p)
+            <div class="col-3 product-item">
+              <div class="product-content">
+                <div class="top">
+                  <div class="img">
+                    <a href="{{ route('products.show', ['product' => $p->id]) }}">
+                      <img src="{{ $p->image_url }}" alt="">
+                    </a>
+                  </div>
+                  <div class="price"><b>￥</b>{{ $p->price }}</div>
+                  <div class="title">
+                    <a href="{{ route('products.show', ['product' => $p->id]) }}">{{ $p->title }}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          @endforeach
+        </div>
+      </div>
+    @endif
+    <!-- 猜你喜欢结束 -->
+
+
   </div>
 </div>
 </div>

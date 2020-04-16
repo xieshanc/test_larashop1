@@ -20,9 +20,45 @@ class PagesController extends Controller
 
     public function test()
     {
-        $res = Product::find(71)->toESArray();
+        $params = [
+            'index' => 'products',
+            'type'  => '_doc',
+            'body'  => [
+                'query' => [
+                    'bool' => [
+                        'should'   => [
+                            [
+                                'nested' => [
+                                    'path'  => 'properties',
+                                    'query' => [
+                                        ['term' => ['properties.search_value' => '品牌名称:金士顿']],
+                                    ],
+                                ],
+                            ],
+                            [
+                                'nested' => [
+                                    'path'  => 'properties',
+                                    'query' => [
+                                        ['term' => ['properties.search_value' => '内存容量:8GB']],
+                                    ],
+                                ],
+                            ],
+                            [
+                                'nested' => [
+                                    'path'  => 'properties',
+                                    'query' => [
+                                        ['term' => ['properties.search_value' => '传输类型:DDR4']],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'minimum_should_match' => 2,
+                    ],
+                ],
+            ],
+        ];
         echo '<pre>';
-        var_dump($res);
+        var_dump(app('es')->search($params));
         exit;
     }
 

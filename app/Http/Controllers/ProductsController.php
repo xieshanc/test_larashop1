@@ -8,6 +8,8 @@ use App\Models\OrderItem;
 use App\Models\Category;
 use App\Exceptions\InvalidRequestException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\SearchBuilders\ProductSearchBuilder;
+use App\Services\ProductService;
 
 class ProductsController extends Controller
 {
@@ -16,123 +18,48 @@ class ProductsController extends Controller
         $page = $request->input('page', 1);
         $perPage = 16;
 
-        // 准备
-        $params = [
-            'index' => 'products',
-            // 'type'  => '_doc',
-            'body'  => [
-                'from'  => ($page - 1) * $perPage,
-                'size'  => $perPage,
-                'query' => [
-                    'bool'  => [
-                        'filter'    => [
-                            ['term' => ['on_sale' => true]],
-                        ],
-                    ],
-                ],
-            ],
-        ];
+        $builder = (new ProductSearchBuilder())->onSale()->paginate($perPage, $page);
 
-        // 分类，直接找分类 id 或者找下级分类
         if ($request->input('category_id') && $category = Category::find($request->input('category_id'))) {
-            if ($category->is_directory) {
-                $params['body']['query']['bool']['filter'][] = [
-                    'prefix' => ['category_path' => $category->path . $category->id . '-'],
-                ];
-            } else {
-                $params['body']['query']['bool']['filter'][] = [
-                    'term' => ['category_id' => $category->id],
-                ];
-            }
+            $builder->category($category);
         }
 
-        // 排序
-        if ($order = $request->input('order', '')) {
-            if (preg_match('/^(.+)_(asc|desc)$/', $order, $m)) {
-                if (in_array($m[1], ['price', 'sold_count', 'rating'])) {
-                    $params['body']['sort'] = [[$m[1] => $m[2]]];
-                }
-            }
-        }
-
-        // 搜索
         if ($search = $request->input('search', '')) {
             $keywords = array_filter(explode(' ', $search));
-            $params['body']['query']['bool']['must'] = [];
-            foreach ($keywords as $keyword) {
-                $params['body']['query']['bool']['must'][] = [
-                    'multi_match' => [
-                        'query' => $keyword,
-                        'fields' => [
-                            'title^2',
-                            'long_title^2',
-                            'category^2',
-                            'description',
-                            'skus_title',
-                            'skus_description',
-                            'properties_value',
-                        ],
-                    ],
-                ];
-            }
+            $builder->keywords($keywords);
         }
 
-        // 属性筛选
+        if ($search || isset($category)) {
+            $builder->aggregateProperties();
+        }
+
         $propertyFilters = [];
         if ($filterString = $request->input('filters')) {
             $filterArray = explode('|', $filterString);
             foreach ($filterArray as $filter) {
                 list($name, $value) = explode(':', $filter);
                 $propertyFilters[$name] = $value;
-                $params['body']['query']['bool']['filter'][] = [
-                    'nested' => [
-                        'path' => 'properties',
-                        'query' => [
-                            ['term' => ['properties.search_value' => $filter]],
-                            // ['term' => ['properties.name' => $name]],
-                            // ['term' => ['properties.value' => $value]],
-                        ],
-                    ],
-                ];
+                $builder->propertyFilter($name, $value);
             }
         }
 
-        // 得到包含的属性们
-        if ($search || isset($category)) {
-            $params['body']['aggs'] = [
-                'juheshuxing1' => [
-                    'nested' => [
-                        'path' => 'properties',
-                    ],
-                    'aggs' => [
-                        'juheshuxing2' => [
-                            'terms' => [
-                                'field' => 'properties.name',
-                            ],
-                            'aggs' => [
-                                'juheshuxing3' => [
-                                    'terms' => [
-                                        'field' => 'properties.value',
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ];
+        if ($order = $request->input('order', '')) {
+            if (preg_match('/^(.+)_(asc|desc)/', $order, $m)) {
+                if (in_array($m[1], ['price', 'sold_count', 'rating'])) {
+                    $builder->orderBy($m[1], $m[2]);
+                }
+            }
         }
-// echo '<pre>';
-// var_dump($params);
-// exit;
-        $result = app('es')->search($params);
+
+        $result = app('es')->search($builder->getParams());
 
         // 从聚合查询出的结果里取得属性
         $properties = [];
         if (isset($result['aggregations'])) {
-            $properties = collect($result['aggregations']['juheshuxing1']['juheshuxing2']['buckets'])->map(function ($bucket) {
+            $properties = collect($result['aggregations']['diyiceng']['dierceng']['buckets'])->map(function ($bucket) {
                 return [
                     'key'       => $bucket['key'],
-                    'values'    => collect($bucket['juheshuxing3']['buckets'])->pluck('key')->all(),
+                    'values'    => collect($bucket['disanceng']['buckets'])->pluck('key')->all(),
                 ];
             })
             ->filter(function ($property) use ($propertyFilters) {
@@ -141,10 +68,8 @@ class ProductsController extends Controller
         }
 
         $productIds = collect($result['hits']['hits'])->pluck('_id')->all();
-        $products = Product::query()
-            ->whereIn('id', $productIds)
-            ->orderByRaw(sprintf("find_in_set(id, '%s')", join(',', $productIds)))
-            ->get();
+        $products = Product::query()->byIds($productIds)->get();
+
         // 数据 / 总数 / 每页数量 / 当前页码 / 这里只有链接，参数另外处理的
         $pager = new LengthAwarePaginator($products, $result['hits']['total']['value'], $perPage, $page, [
             'path'  => route('products.index', false),
@@ -162,7 +87,7 @@ class ProductsController extends Controller
         ]);
     }
 
-    public function show(Product $product, Request $request)
+    public function show(Product $product, Request $request, ProductService $service)
     {
         if (!$product->on_sale) {
             throw new InvalidRequestException('商品未上架');
@@ -180,7 +105,21 @@ class ProductsController extends Controller
                 ->limit(10)
                 ->get();
 
-        return view('products.show', ['product' => $product, 'favored' => $favored, 'reviews' => $reviews]);
+        $builder = (new ProductSearchBuilder())->onSale()->paginate(4, 1);
+        foreach ($product->properties as $property) {
+            $builder->propertyFilter($property->name, $property->value, 'should');
+        }
+
+        $similarProductIds = $service->getSimilarProductIds($product, 4);
+        $similarProducts = Product::query()->byIds($similarProductIds)->get();
+
+
+        return view('products.show', [
+            'product' => $product,
+            'favored' => $favored,
+            'reviews' => $reviews,
+            'similar' => $similarProducts,
+        ]);
     }
 
     public function favorites(Request $request)
