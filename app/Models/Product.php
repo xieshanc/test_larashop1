@@ -10,6 +10,7 @@ class Product extends Model
 {
     const TYPE_NORMAL = 'normal';
     const TYPE_CROWDFUNDING = 'crowdfunding';
+    const TYPE_SECKILL = 'seckill';
 
     protected $fillable = [
         'title', 'long_title', 'description', 'image', 'on_sale', 'price', 'type',
