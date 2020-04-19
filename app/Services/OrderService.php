@@ -127,6 +127,43 @@ class OrderService
         return $order;
     }
 
+    public function seckill(UserAddress $address, ProductSku $sku)
+    {
+        $user = Auth::user();
+        $amount = 1;
+        $order = \DB::transaction(function () use ($user, $address, $sku, $amount) {
+            $address->update(['last_used_at' => Carbon::now()]);
+            if ($sku->decreaseStock($amount) <= 0) {
+                throw new InvalidRequestException('商品库存不足');
+            }
+            $order = new Order([
+                'address'   => [
+                    'address'       => $address->full_address,
+                    'zip'           => $address->zip,
+                    'contact_name'  => $address->contact_name,
+                    'contact_phone' => $address->contact_phone,
+                ],
+                'remark'        => '',
+                'total_amount'  => $sku->price,
+                'type'          => Order::TYPE_SECKILL,
+            ]);
+            $order->user()->associate($user);
+            $order->save();
+            $item = $order->items()->make([
+                'amount'    => $amount,
+                'price'     => $sku->price,
+            ]);
+            $item->product()->associate($sku->product_id);
+            $item->productSku()->associate($sku);
+            $item->save();
+
+            return $order;
+        });
+
+        dispatch(new CloseOrder($order, config('app.seckill_order_ttl')));
+        return $order;
+    }
+
     public function updateProductSoldCount(Order $order)
     {
         // 预加载商品数据

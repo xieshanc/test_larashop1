@@ -18,7 +18,7 @@ class SeckillProduct extends Model
 
     public function getIsBeforeStartAttribute()
     {
-        return Carbon::now()->it($this->start_at);
+        return Carbon::now()->lt($this->start_at);
     }
 
     public function getIsAfterEndAttribute()

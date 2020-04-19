@@ -14,6 +14,7 @@ use App\Http\Requests\OrderRequest;
 use App\Http\Requests\SendReviewRequest;
 use App\Http\Requests\ApplyRefundRequest;
 use App\Http\Requests\CrowdfundingOrderRequest;
+use App\Http\Requests\SeckillOrderRequest;
 use App\Events\OrderReviewedEvent;
 use App\Exceptions\InvalidRequestException;
 use Carbon\Carbon;
@@ -52,6 +53,14 @@ class OrdersController extends Controller
         $amount = $request->input('amount');
 
         return $orderService->crowdfunding($address, $sku, $amount);
+    }
+
+    public function seckill(SeckillOrderRequest $request, OrderService $orderService)
+    {
+        $address = UserAddress::find($request->input('address_id'));
+        $sku     = ProductSku::find($request->input('sku_id'));
+
+        return $orderService->seckill($address, $sku);
     }
 
     public function received(Order $order, Request $request)
