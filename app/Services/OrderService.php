@@ -14,6 +14,7 @@ use App\Exceptions\CouponCodeUnavailableException;
 use App\Jobs\CloseOrder;
 use App\Jobs\RefundInstallmentOrderJob;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Redis;
 
 class OrderService
 {
@@ -127,21 +128,20 @@ class OrderService
         return $order;
     }
 
-    public function seckill(UserAddress $address, ProductSku $sku)
+    public function seckill(array $addressData, ProductSku $sku)
     {
         $user = Auth::user();
         $amount = 1;
-        $order = \DB::transaction(function () use ($user, $address, $sku, $amount) {
-            $address->update(['last_used_at' => Carbon::now()]);
+        $order = \DB::transaction(function () use ($user, $addressData, $sku, $amount) {
             if ($sku->decreaseStock($amount) <= 0) {
                 throw new InvalidRequestException('商品库存不足');
             }
             $order = new Order([
                 'address'   => [
-                    'address'       => $address->full_address,
-                    'zip'           => $address->zip,
-                    'contact_name'  => $address->contact_name,
-                    'contact_phone' => $address->contact_phone,
+                    'address'       => $addressData['province'] . $addressData['city'] . $addressData['district'] . $addressData['address'],
+                    'zip'           => $addressData['zip'],
+                    'contact_name'  => $addressData['contact_name'],
+                    'contact_phone' => $addressData['contact_phone'],
                 ],
                 'remark'        => '',
                 'total_amount'  => $sku->price,
@@ -157,6 +157,7 @@ class OrderService
             $item->productSku()->associate($sku);
             $item->save();
 
+            Redis::decr('seckill_sku_' . $sku->id);
             return $order;
         });
 
