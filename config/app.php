@@ -229,7 +229,7 @@ return [
     ],
 
     'order_ttl' => 1800, // 秒
-    'seckill_order_ttl' => 600,
+    'seckill_order_ttl' => 60,
     'installment_fee_rate' => [
         3 =>    1.5,
         6 =>    2,

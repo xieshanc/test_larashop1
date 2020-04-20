@@ -35,7 +35,7 @@ class SeckillOrderRequest extends Request
                         return $fail('该商品未上架');
                     }
                     if ($sku->stock < 1) {
-                        return $fail('该商品已售完');
+                        return $fail('该商品已售完 sell out');
                     }
 
                     if ($order = Order::query()

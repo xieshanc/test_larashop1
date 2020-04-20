@@ -113,6 +113,7 @@ class ProductsController extends Controller
         $similarProductIds = $service->getSimilarProductIds($product, 4);
         $similarProducts = Product::query()->byIds($similarProductIds)->get();
 
+
         return view('products.show', [
             'product' => $product,
             'favored' => $favored,
